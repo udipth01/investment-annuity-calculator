@@ -6,7 +6,7 @@ from math import floor
 # --------------------------
 # 🔹 CONFIGURATION
 # --------------------------
-st.set_page_config(page_title="Investment Annuity Calculator", page_icon="💰", layout="centered")
+st.set_page_config(page_title="SWP Calculator", page_icon="💰", layout="centered")
 
 # --- Force White Background and Black Text ---
 st.markdown(
@@ -87,8 +87,8 @@ def num_to_words(n):
 # 🔹 LOGO + TITLE
 # --------------------------
 st.image("logo.png", width=190)
-st.title("💰 Investment Annuity Calculator")
-st.caption("Estimate how much annuity you can receive based on your investment and return expectations.")
+st.title("💰 SWP Calculator")
+st.caption("Estimate how much SWP you can receive based on your investment and return expectations.")
 
 # --------------------------
 # 🔹 USER INPUTS
@@ -153,7 +153,7 @@ df = pd.DataFrame({"Year": years, "Portfolio Value (₹)": values})
 # --------------------------
 st.subheader("📊 Results Summary")
 st.write(f"**Future Value at Waiting Year ({waiting_till})**: ₹{indian_format(fv_waiting)}")
-st.write(f"**Annuity you can get till {want_money_till}**: ₹{indian_format(annuity)}")
+st.write(f"**SWP you can get till {want_money_till}**: ₹{indian_format(annuity)}")
 st.write(f"**In words:** {num_to_words(annuity)}")
 
 # --------------------------
