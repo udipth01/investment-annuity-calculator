@@ -160,4 +160,4 @@ st.write(f"**In words:** {num_to_words(annuity)}")
 # 🔹 FOOTER
 # --------------------------
 st.markdown("---")
-st.markdown("🔸 *Developed by Finideas — Smart Investment Tools for Smarter Decisions.*")
+st.markdown("🔸 *Developed by Finideas — Investment ke ideas Matlab Finideas.*")
