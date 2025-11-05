@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import io
+from math import floor
 
 # --------------------------
 # 🔹 CONFIGURATION
@@ -41,7 +42,6 @@ st.markdown(
             transition: background-color 0.2s ease-in-out;
         }
 
-        /* Hover effect for button */
         div.stDownloadButton > button:hover {
             background-color: #6c757d !important;  /* darker gray */
             color: white !important;
@@ -52,9 +52,40 @@ st.markdown(
 )
 
 # --------------------------
+# 🔹 Utility Functions
+# --------------------------
+
+# Format numbers in Indian comma style
+def indian_format(num):
+    x = int(round(num, 0))
+    s = str(x)
+    if len(s) <= 3:
+        return s
+    else:
+        last3 = s[-3:]
+        rest = s[:-3]
+        rest = list(rest)
+        rest.reverse()
+        new = []
+        for i, digit in enumerate(rest):
+            if i % 2 == 0 and i != 0:
+                new.append(',')
+            new.append(digit)
+        new.reverse()
+        return ''.join(new) + ',' + last3
+
+# Convert number to Indian rupees in words
+def num_to_words(n):
+    from num2words import num2words
+    try:
+        words = num2words(floor(n), lang='en_IN')
+        return words.replace(',', '').capitalize() + " rupees"
+    except:
+        return "Value too large to convert"
+
+# --------------------------
 # 🔹 LOGO + TITLE
 # --------------------------
-# Replace 'logo.png' with your logo filename (ensure it's in the same folder as app.py)
 st.image("logo.png", width=190)
 st.title("💰 Investment Annuity Calculator")
 st.caption("Estimate how much annuity you can receive based on your investment and return expectations.")
@@ -64,15 +95,15 @@ st.caption("Estimate how much annuity you can receive based on your investment a
 # --------------------------
 col1, col2 = st.columns(2)
 with col1:
-    current_year = st.number_input("Current Year", value=2025)
-    initial_investment = st.number_input("Initial Investment (₹)", value=10000000.0, step=100000.0)
-    yearly_payment = st.number_input("Yearly Payment (₹, use negative for outflow)", value=-500000.0, step=50000.0)
-    expected_return = st.number_input("Expected Return (%)", value=15.0, step=0.1) / 100
+    current_year = st.number_input("Current Year", value=2025, step=1, format="%d")
+    initial_investment = st.number_input("Initial Investment (₹)", value=10000000, step=100000, format="%d")
+    yearly_payment = st.number_input("Yearly Payment (₹, use negative for outflow)", value=-500000, step=50000, format="%d")
+    expected_return = st.number_input("Expected Return (%)", value=15, step=1, format="%d") / 100
 
 with col2:
-    payment_till = st.number_input("Payment Till Year", value=2040)
-    waiting_till = st.number_input("Waiting Till Year", value=2040)
-    want_money_till = st.number_input("Want Money Till Year", value=2060)
+    payment_till = st.number_input("Payment Till Year", value=2040, step=1, format="%d")
+    waiting_till = st.number_input("Waiting Till Year", value=2040, step=1, format="%d")
+    want_money_till = st.number_input("Want Money Till Year", value=2060, step=1, format="%d")
 
 # --------------------------
 # 🔹 CALCULATIONS
@@ -96,7 +127,7 @@ fv_total = fv_initial + fv_annuity
 fv_waiting = fv_total * (1 + r) ** n3
 
 # Step 5: Calculate annuity from waiting till to want money till
-annuity = fv_waiting * r / (1-(1 + r) ** -n4 )
+annuity = fv_waiting * r / (1 - (1 + r) ** -n4)
 
 # --------------------------
 # 🔹 BUILD GROWTH DATA FOR CHART
@@ -107,13 +138,12 @@ values = []
 balance = initial_investment
 for year in years:
     if year <= payment_till:
-        balance = (balance  * (1 + r) + yearly_payment)
+        balance = (balance * (1 + r) + yearly_payment)
     elif year <= waiting_till:
         balance = balance * (1 + r)
     else:
-        # during annuity withdrawal
         withdrawal = annuity
-        balance = (balance * (1 + r) - withdrawal) 
+        balance = (balance * (1 + r) - withdrawal)
     values.append(balance)
 
 df = pd.DataFrame({"Year": years, "Portfolio Value (₹)": values})
@@ -122,26 +152,9 @@ df = pd.DataFrame({"Year": years, "Portfolio Value (₹)": values})
 # 🔹 DISPLAY RESULTS
 # --------------------------
 st.subheader("📊 Results Summary")
-st.write(f"**Future Value at Waiting Year ({waiting_till})**: ₹{fv_waiting:,.2f}")
-st.write(f"**Annuity you can get till {want_money_till}**: ₹{annuity:,.0f}")
-
-# # --------------------------
-# # 🔹 LINE CHART
-# # --------------------------
-# st.subheader("📈 Portfolio Growth Over Time")
-# st.line_chart(df.set_index("Year"))
-
-# # --------------------------
-# # 🔹 CSV DOWNLOAD
-# # --------------------------
-# csv_buffer = io.StringIO()
-# df.to_csv(csv_buffer, index=False)
-# st.download_button(
-#     label="💾 Download Portfolio Data as CSV",
-#     data=csv_buffer.getvalue(),
-#     file_name="investment_annuity_projection.csv",
-#     mime="text/csv"
-# )
+st.write(f"**Future Value at Waiting Year ({waiting_till})**: ₹{indian_format(fv_waiting)}")
+st.write(f"**Annuity you can get till {want_money_till}**: ₹{indian_format(annuity)}")
+st.write(f"**In words:** {num_to_words(annuity)}")
 
 # --------------------------
 # 🔹 FOOTER
